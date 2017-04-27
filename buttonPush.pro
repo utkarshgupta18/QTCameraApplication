@@ -4,8 +4,8 @@
 
 TEMPLATE = app
 TARGET = 
-DEPENDPATH += . 
-INCLUDEPATH += -L"/opt/EVT/eSDK/lib"  -lEmergentCamera  -lEmergentGenICam  -lEmergentGigEVision "/opt/EVT/eSDK/include"
+INCLUDEPATH += -L"$(EMERGENT_DIR)/eSDK/lib" -lEmergentCamera -lEmergentGenICam -lEmergentGigEVision "$(EMERGENT_DIR)/eSDK/include"
+DEPENDPATH += .
 
 # Input
 HEADERS += mainwindow.h stdafx.h targetver.h 
