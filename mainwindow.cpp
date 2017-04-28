@@ -8,6 +8,8 @@
 #include <QMessageBox>
 #include "stdafx.h"
 #include <stdio.h>
+#include <iostream>
+#include <string>
 #include <string.h>
 #include <EmergentCameraAPIs.h>
 #include <EmergentCamera.h>
@@ -27,17 +29,7 @@ CEmergentCamera camera;
    
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent)//,ui(new Ui::MainWindow)
-{
-    
-   
-//   const unsigned long StringSize = 256;
-//   unsigned long StringSizeReturn = 0;
-//   char StringBuffer[StringSize];
-//   int ReturnVal = SUCCESS;
-//   struct GigEVisionDeviceInfo deviceInfo[MAX_CAMERAS];
-//   unsigned int count, camera_index;
-//   char camera_model[100];  
-//   
+{  
   m_button = new QPushButton("My Button", this);
     // set size and location of the button
     m_button->setGeometry(QRect(QPoint(20, 20), QSize(150, 70)));
@@ -59,12 +51,127 @@ void MainWindow::handleButton()
     m_button->setText("Example Button Pushed");
     // resize button
     //m_button->resize(100,100);
-    
-    configure_defaults(&camera);
-    
+        
     QMessageBox msgBox;
-    msgBox.setText("Example Code");
+        
+    int a = 5;
+    QString testMsg = "someString" + QString::number( a );
+//     msgBox.setText("Example Code");
+//     msgBox.exec();
+
+    const unsigned long StringSize = 256;
+    unsigned long StringSizeReturn = 0;
+    char StringBuffer[StringSize];
+    int ReturnVal = SUCCESS;
+    struct GigEVisionDeviceInfo deviceInfo[MAX_CAMERAS];
+    unsigned int count, camera_index;
+    char camera_model[100];
+    
+    msgBox.setText("DeviceInformation : Example program  ");
+//     QString text = "someString" + QString::number( a );
+//     msgBox.setText("abc " + text);
     msgBox.exec();
+    
+      //Find all cameras in system.
+  unsigned int listcam_buf_size = MAX_CAMERAS;
+  EVT_ListDevices(deviceInfo, &listcam_buf_size, &count);
+  if(count==0)
+  {
+    printf("Enumerate Cameras: \tNo cameras found. Exiting program.\n");
+    //return 0;
+  }
+
+  //Find and use first EVT camera.
+  for(camera_index=0; camera_index<MAX_CAMERAS;camera_index++)
+  {
+    strcpy_s(camera_model, deviceInfo[camera_index].modelName);
+    camera_model[2] = '\0';
+    if(strcmp(camera_model, "HS") == 0)
+    {
+      break; //Found EVT camera so break. i carries index for open.
+    }
+
+    if(strcmp(camera_model, "HT") == 0)
+    {
+      break; //Found EVT camera so break. i carries index for open.
+    }
+
+    if(camera_index==(MAX_CAMERAS-1))
+    {
+      printf("No EVT cameras found. Exiting program\n");
+      //return 0;
+    }
+  }  
+
+  //Open the camera. Example usage. Camera found needs to match XML.
+#ifdef XML_FILE
+  ReturnVal = EVT_CameraOpen(&camera, &deviceInfo[camera_index], XML_FILE);
+#else
+  ReturnVal = EVT_CameraOpen(&camera, &deviceInfo[camera_index]);      
+#endif
+  if(ReturnVal != SUCCESS)
+  {
+    printf("Open Camera: \t\tError. Exiting program.\n");
+    //return ReturnVal;
+  }
+  else
+  {
+    printf("Open Camera: \t\tCamera Opened\n\n");
+  }
+
+  //To avoid conflict with settings in other examples.
+  configure_defaults(&camera);
+
+	//Get Device information.
+	ReturnVal = EVT_CameraGetStringParam(&camera, "DeviceVendorName", StringBuffer, StringSize, &StringSizeReturn);
+  if(ReturnVal != SUCCESS)
+  {
+    printf("EVT_CameraGetStringParam: Error\n");
+    //return ReturnVal;
+  }
+  printf("DeviceVendorName: \t%s\n", StringBuffer);
+
+	ReturnVal = EVT_CameraGetStringParam(&camera, "DeviceModelName", StringBuffer, StringSize, &StringSizeReturn);
+  if(ReturnVal != SUCCESS)
+  {
+    printf("EVT_CameraGetStringParam: Error\n");
+    //return ReturnVal;
+  }
+  printf("DeviceModelName: \t%s\n", StringBuffer);
+
+	ReturnVal = EVT_CameraGetStringParam(&camera, "DeviceVersion", StringBuffer, StringSize, &StringSizeReturn);
+  if(ReturnVal != SUCCESS)
+  {
+    printf("EVT_CameraGetStringParam: Error\n");
+    //return ReturnVal;
+  }
+  printf("DeviceVersion: \t\t%s\n", StringBuffer);
+
+	ReturnVal = EVT_CameraGetStringParam(&camera, "DeviceSerialNumber", StringBuffer, StringSize, &StringSizeReturn);
+  if(ReturnVal != SUCCESS)
+  {
+    printf("EVT_CameraGetStringParam: Error\n");
+    //return ReturnVal;
+  }
+  printf("DeviceSerialNumber: \t%s\n", StringBuffer);
+
+	ReturnVal = EVT_CameraGetStringParam(&camera, "DeviceFirmwareVersion", StringBuffer, StringSize, &StringSizeReturn);
+  if(ReturnVal != SUCCESS)
+  {
+    printf("EVT_CameraGetStringParam: Error\n");
+    //return ReturnVal;
+  }
+  printf("DeviceFirmwareVersion: \t%s\n", StringBuffer);
+
+  //To avoid conflict with settings in other examples.
+  configure_defaults(&camera);
+
+	//Close the camera
+	EVT_CameraClose(&camera);
+  printf("\nClose Camera: \t\tCamera Closed\n");
+
+    
+    
 }
 /*void MainWindow::quit()
 {
